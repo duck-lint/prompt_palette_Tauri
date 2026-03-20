@@ -4,20 +4,20 @@
     - `--accent` controls the selected row and primary button.
     - `--surface*` and `--border` control the plain / minimal look.
   */
-  --page: #f3f3f3;
-  --surface: #ffffff;
-  --surface-muted: #fafafa;
-  --border: #d9d9d9;
-  --text: #111111;
+  --page: #B6BFB8;
+  --surface: #F2F5F3;
+  --surface-muted: #E4EBE6;
+  --border: var(--surface-muted);
+  --text: #101411;
   --muted: #666666;
-  --accent: #111111;
-  --accent-text: #ffffff;
-  --success-bg: #edf7f0;
-  --success-border: #cce4d2;
-  --success-text: #256640;
-  --danger-bg: #fff2f2;
-  --danger-border: #efc8c8;
-  --danger-text: #9b2d2d;
+  --accent: var(--text);
+  --accent-text: var(--surface);
+  --success-bg: #BFFFD1;
+  --success-border: #8CF2A6;
+  --success-text: #0A241B;
+  --danger-bg: #F4A876;
+  --danger-border: #FE4C25;
+  --danger-text: #500A00;
   font-family: "Segoe UI Variable", "Aptos", sans-serif;
   color: var(--text);
   background: var(--page);
@@ -51,6 +51,14 @@ kbd {
   font-family: "Cascadia Code", "Consolas", monospace;
 }
 
+.shell {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  padding: 12px;
+  box-sizing: border-box;
+}
+
 kbd {
   display: inline-flex;
   align-items: center;
@@ -63,25 +71,21 @@ kbd {
   color: var(--text);
   font-size: 0.8rem;
 }
-
-.shell {
-  min-height: 100%;
-  padding: var(--shell-padding);
-  box-sizing: border-box;
-  background: var(--page);
-}
-
 .frame {
   display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
   gap: 12px;
   width: 100%;
-  max-width: var(--frame-max-width);
+  height: 100%;
+  min-height: 0;
   margin: 0 auto;
-  padding: 14px;
+  padding: var(--shell-padding, 22px);
+  max-width: var(--frame-max-width, 1120px);
   box-sizing: border-box;
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--surface);
+  overflow: hidden;
 }
 
 .crash-frame {
@@ -95,6 +99,34 @@ kbd {
   3. `.results-panel` is the prompt list.
   4. `.detail-panel` is preview / fill mode.
 */
+.status-stack,
+.panel-stack,
+.search-block,
+.search-wrap,
+.detail-body {
+  display: grid;
+}
+
+.status-stack,
+.search-block,
+.search-wrap {
+  gap: 8px;
+}
+
+.detail-body {
+  gap: 12px;
+}
+
+.panel-stack {
+  gap: 12px;
+  min-height: 0;
+  grid-template-rows: auto auto minmax(0, 1fr);
+}
+
+.panel-stack-fill {
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
 .topbar,
 .search-meta,
 .detail-head,
@@ -103,18 +135,12 @@ kbd {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .title-group {
   min-width: 0;
-}
-
-.topbar-actions,
-.actions,
-.chips {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
 }
 
 .eyebrow,
@@ -190,16 +216,6 @@ h2 {
   color: var(--success-text);
 }
 
-.search-block {
-  display: grid;
-  gap: 8px;
-}
-
-.search-wrap {
-  display: grid;
-  gap: 6px;
-}
-
 .search,
 .textarea {
   width: 100%;
@@ -215,10 +231,12 @@ h2 {
 }
 
 .textarea {
-  min-height: 120px;
+  min-height: 112px;
+  max-height: 168px;
   padding: 0.9rem 0.95rem;
   resize: vertical;
   line-height: 1.5;
+  overflow: auto;
 }
 
 .search:focus,
@@ -240,16 +258,31 @@ h2 {
 .results-panel {
   display: grid;
   gap: 6px;
-  min-height: 120px;
-  max-height: 220px;
+  min-height: 108px;
+  max-height: 168px;
   overflow: auto;
   padding: 8px;
 }
 
 .detail-panel {
   display: grid;
-  gap: 12px;
+  grid-template-rows: minmax(0, 1fr) auto;
+  min-height: 0;
   padding: 12px;
+  overflow: hidden;
+}
+
+.detail-body {
+  min-height: 0;
+  overflow: auto;
+  align-content: start;
+  padding-right: 2px;
+}
+
+.detail-empty {
+  display: grid;
+  height: 100%;
+  align-content: center;
 }
 
 .result {
@@ -305,6 +338,12 @@ h2 {
   color: var(--muted);
 }
 
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .chip-current {
   border-color: var(--accent);
   background: var(--accent);
@@ -340,6 +379,7 @@ h2 {
 .preview-shell {
   display: grid;
   gap: 8px;
+  min-height: 0;
   padding: 10px;
   background: var(--surface);
 }
@@ -347,6 +387,7 @@ h2 {
 .preview {
   margin: 0;
   max-height: 220px;
+  min-height: 0;
   overflow: auto;
   padding: 12px;
   border-radius: 8px;
@@ -391,6 +432,15 @@ h2 {
 
 .ghost {
   color: var(--muted);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
 }
 
 .primary:disabled,

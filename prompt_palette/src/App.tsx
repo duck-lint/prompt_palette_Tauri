@@ -152,6 +152,12 @@ function AppContent() {
   const finalStep =
     activeTemplate !== null &&
     placeholderIndex === activeTemplate.placeholders.length - 1;
+  const showResults = !filling;
+  const searchHint = filling
+    ? "Fill the current prompt. Esc returns to the palette."
+    : TAURI_RUNTIME_AVAILABLE
+      ? "Enter opens the selected prompt. Esc hides the palette."
+      : "Browser preview can render and copy JSON, but not paste into another app.";
 
   function clearMessages() {
     setError("");
@@ -413,286 +419,303 @@ function AppContent() {
             <p className="eyebrow">Prompt Palette</p>
             <h1>Search prompt templates, then fill fields.</h1>
           </div>
-
         </header>
 
-        {error ? <div className="message message-error">{error}</div> : null}
-        {notice ? <div className="message message-notice">{notice}</div> : null}
-
-        {/* Search stays first so the palette feels like a command bar, not a dashboard. */}
-        <section className="search-block">
-          <label className="search-wrap" htmlFor="palette-search">
-            <span className="search-label">Search prompt filename</span>
-            <input
-              ref={searchRef}
-              id="palette-search"
-              className="search"
-              autoFocus={!filling}
-              value={query}
-              onChange={(event) => setQuery(event.currentTarget.value)}
-              onKeyDown={onSearchKeyDown}
-              placeholder="reg_quick_default, team_advisor, handoff..."
-              disabled={filling || busy}
-              spellCheck={false}
-            />
-          </label>
-
-          <div className="search-meta">
-            <span className="meta-copy">
-              {filtered.length === PROMPT_TEMPLATES.length
-                ? `Showing all ${PROMPT_TEMPLATES.length} prompts`
-                : `${filtered.length} matches`}
-            </span>
-            <span className="meta-copy">
-              {TAURI_RUNTIME_AVAILABLE
-                ? "Enter opens the selected prompt. Esc hides the palette."
-                : "Browser preview can render and copy JSON, but not paste into another app."}
-            </span>
+        {error || notice ? (
+          <div className="status-stack">
+            {error ? <div className="message message-error">{error}</div> : null}
+            {notice ? <div className="message message-notice">{notice}</div> : null}
           </div>
-        </section>
+        ) : null}
 
-        <section className={`results-panel ${filling ? "muted" : ""}`}>
-          {filtered.length === 0 ? (
-            <div className="empty">
-              No prompt names matched <code>{deferredQuery || "the filter"}</code>.
-            </div>
-          ) : (
-            filtered.map((template, index) => (
-              <button
-                key={template.id}
-                type="button"
-                role="option"
-                aria-selected={!filling && index === selectedIndex}
-                className={[
-                  "result",
-                  !filling && index === selectedIndex ? "selected" : "",
-                  activeTemplate?.id === template.id ? "active" : "",
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-                onClick={() => !filling && setSelectedIndex(index)}
-                onDoubleClick={() => !filling && startTemplate(template)}
-                onMouseEnter={() => !filling && setSelectedIndex(index)}
+        <div
+          className={[
+            "panel-stack",
+            showResults ? "" : "panel-stack-fill",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
+          {/* Search stays first so the palette feels like a command bar, not a dashboard. */}
+          <section className="search-block">
+            <label className="search-wrap" htmlFor="palette-search">
+              <span className="search-label">Search prompt filename</span>
+              <input
+                ref={searchRef}
+                id="palette-search"
+                className="search"
+                autoFocus={!filling}
+                value={query}
+                onChange={(event) => setQuery(event.currentTarget.value)}
+                onKeyDown={onSearchKeyDown}
+                placeholder="reg_quick_default, team_advisor, handoff..."
                 disabled={filling || busy}
-              >
-                <span className="result-copy">
-                  <strong>{template.name}</strong>
-                  <span>{fieldCountLabel(template.placeholders.length)}</span>
-                </span>
-                <span className="result-meta">
-                  {!filling && index === selectedIndex ? "Enter" : "Open"}
-                </span>
-              </button>
-            ))
-          )}
-        </section>
-
-        {/* This lower section is the only mode swap: preview when browsing, field entry when filling. */}
-        <section className="detail-panel">
-          {!selectedTemplate ? (
-            <div className="empty">
-              Search for a prompt above, then press <kbd>Enter</kbd> to open it.
-            </div>
-          ) : !filling ? (
-            <>
-              <div className="detail-head">
-                <div>
-                  <p className="label">Selected Prompt</p>
-                  <h2>{selectedTemplate.name}</h2>
-                </div>
-                <span className="badge">
-                  {selectedTemplate.placeholders.length === 0
-                    ? "Ready now"
-                    : fieldCountLabel(selectedTemplate.placeholders.length)}
-                </span>
-              </div>
-
-              <div className="preview-shell">
-                <div className="preview-head">
-                  <span className="label">Template</span>
-                  <span className="meta-copy">Raw JSON source</span>
-                </div>
-                <pre className="preview">{selectedTemplate.content}</pre>
-              </div>
-
-              <div className="actions">
-                <button
-                  type="button"
-                  className="primary"
-                  onClick={() => startTemplate(selectedTemplate)}
-                  disabled={busy}
-                >
-                  {selectedTemplate.placeholders.length === 0
-                    ? TAURI_RUNTIME_AVAILABLE
-                      ? "Insert Prompt"
-                      : "Copy JSON"
-                    : "Use Template"}
-                </button>
-                {selectedTemplate.placeholders.length === 0 ? (
-                  <button
-                    type="button"
-                    className="secondary"
-                    onClick={() => void copyRenderedOutput(selectedTemplate, {})}
-                    disabled={busy}
-                  >
-                    Copy JSON
-                  </button>
-                ) : null}
-                <button
-                  type="button"
-                  className="ghost"
-                  onClick={() => void hidePalette()}
-                  disabled={busy}
-                >
-                  Hide Palette
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="detail-head">
-                <div>
-                  <p className="label">Fill Fields</p>
-                  <h2>{activeTemplate.name}</h2>
-                </div>
-                <span className="badge">
-                  {placeholderIndex + 1} / {activeTemplate.placeholders.length}
-                </span>
-              </div>
-
-              <div className="bar">
-                <div
-                  className="bar-fill"
-                  style={{
-                    width: `${
-                      ((placeholderIndex + 1) / activeTemplate.placeholders.length) *
-                      100
-                    }%`,
-                  }}
-                />
-              </div>
-
-              <div className="chips">
-                {activeTemplate.placeholders.map((placeholder, index) => (
-                  <span
-                    key={placeholder}
-                    className={[
-                      "chip",
-                      index === placeholderIndex ? "chip-current" : "",
-                      index < placeholderIndex ? "chip-done" : "",
-                    ]
-                      .filter(Boolean)
-                      .join(" ")}
-                  >
-                    {placeholder}
-                  </span>
-                ))}
-              </div>
-
-              <div className="field-head">
-                <label className="field" htmlFor="field-value">
-                  {currentPlaceholder}
-                </label>
-                <span className="field-meta">
-                  {currentValue.length} chars, <kbd>Enter</kbd> next, <kbd>Shift</kbd> +{" "}
-                  <kbd>Enter</kbd> newline
-                </span>
-              </div>
-
-              <textarea
-                ref={valueRef}
-                id="field-value"
-                className="textarea"
-                autoFocus={filling}
-                value={currentValue}
-                onChange={(event) => {
-                  if (!currentPlaceholder) return;
-
-                  const nextValue = event.currentTarget.value;
-                  setValues((current) => ({
-                    ...current,
-                    [currentPlaceholder]: nextValue,
-                  }));
-                }}
-                onKeyDown={onFillKeyDown}
-                placeholder="String content to inject into the JSON template"
-                disabled={busy}
                 spellCheck={false}
               />
+            </label>
 
-              <div className="preview-shell">
-                <div className="preview-head">
-                  <span className="label">Live Render</span>
-                  <span
+            <div className="search-meta">
+              <span className="meta-copy">
+                {filtered.length === PROMPT_TEMPLATES.length
+                  ? `Showing all ${PROMPT_TEMPLATES.length} prompts`
+                  : `${filtered.length} matches`}
+              </span>
+              <span className="meta-copy">{searchHint}</span>
+            </div>
+          </section>
+
+          {showResults ? (
+            <section
+              className="results-panel"
+              role="listbox"
+              aria-label="Search results"
+            >
+              {filtered.length === 0 ? (
+                <div className="empty">
+                  No prompt names matched <code>{deferredQuery || "the filter"}</code>.
+                </div>
+              ) : (
+                filtered.map((template, index) => (
+                  <button
+                    key={template.id}
+                    type="button"
+                    role="option"
+                    aria-selected={index === selectedIndex}
                     className={[
-                      "validation-pill",
-                      previewState.validationError ? "invalid" : "valid",
+                      "result",
+                      index === selectedIndex ? "selected" : "",
                     ]
                       .filter(Boolean)
                       .join(" ")}
-                  >
-                    {previewState.validationError ? "Needs Fix" : "JSON Valid"}
-                  </span>
-                </div>
-                <pre className="preview">{previewState.rendered}</pre>
-                {previewState.validationError ? (
-                  <p className="inline-note inline-note-error">
-                    {previewState.validationError}
-                  </p>
-                ) : (
-                  <p className="inline-note">
-                    This is the exact JSON that will be copied or pasted.
-                  </p>
-                )}
-              </div>
-
-              <div className="actions">
-                {placeholderIndex > 0 ? (
-                  <button
-                    type="button"
-                    className="secondary"
-                    onClick={() =>
-                      setPlaceholderIndex((current) => Math.max(current - 1, 0))
-                    }
+                    onClick={() => setSelectedIndex(index)}
+                    onDoubleClick={() => startTemplate(template)}
+                    onMouseEnter={() => setSelectedIndex(index)}
                     disabled={busy}
                   >
-                    Back
+                    <span className="result-copy">
+                      <strong>{template.name}</strong>
+                      <span>{fieldCountLabel(template.placeholders.length)}</span>
+                    </span>
+                    <span className="result-meta">
+                      {index === selectedIndex ? "Enter" : "Select"}
+                    </span>
                   </button>
-                ) : null}
-                <button
-                  type="button"
-                  className="secondary"
-                  onClick={() => void copyRenderedOutput(activeTemplate, values)}
-                  disabled={busy || Boolean(previewState.validationError)}
-                >
-                  Copy JSON
-                </button>
-                <button
-                  type="button"
-                  className="ghost"
-                  onClick={cancelFill}
-                  disabled={busy}
-                >
-                  Back To Palette
-                </button>
-                <button
-                  type="button"
-                  className="primary"
-                  onClick={() => void advanceFill()}
-                  disabled={busy}
-                >
-                  {busy
-                    ? "Working..."
-                    : finalStep
+                ))
+              )}
+            </section>
+          ) : null}
+
+          {/* This lower section is the only mode swap: preview when browsing, field entry when filling. */}
+          <section className="detail-panel">
+            {!selectedTemplate ? (
+              <div className="empty detail-empty">
+                Search for a prompt above, then press <kbd>Enter</kbd> to open it.
+              </div>
+            ) : !filling ? (
+              <>
+                <div className="detail-body">
+                  <div className="detail-head">
+                    <div>
+                      <p className="label">Selected Prompt</p>
+                      <h2>{selectedTemplate.name}</h2>
+                    </div>
+                    <span className="badge">
+                      {selectedTemplate.placeholders.length === 0
+                        ? "Ready now"
+                        : fieldCountLabel(selectedTemplate.placeholders.length)}
+                    </span>
+                  </div>
+
+                  <div className="preview-shell">
+                    <div className="preview-head">
+                      <span className="label">Template</span>
+                      <span className="meta-copy">Raw JSON source</span>
+                    </div>
+                    <pre className="preview">{selectedTemplate.content}</pre>
+                  </div>
+                </div>
+
+                <div className="actions">
+                  <button
+                    type="button"
+                    className="primary"
+                    onClick={() => startTemplate(selectedTemplate)}
+                    disabled={busy}
+                  >
+                    {selectedTemplate.placeholders.length === 0
                       ? TAURI_RUNTIME_AVAILABLE
                         ? "Insert Prompt"
                         : "Copy JSON"
-                      : "Next Field"}
-                </button>
-              </div>
-            </>
-          )}
-        </section>
+                      : "Use Template"}
+                  </button>
+                  {selectedTemplate.placeholders.length === 0 ? (
+                    <button
+                      type="button"
+                      className="secondary"
+                      onClick={() => void copyRenderedOutput(selectedTemplate, {})}
+                      disabled={busy}
+                    >
+                      Copy JSON
+                    </button>
+                  ) : null}
+                  <button
+                    type="button"
+                    className="ghost"
+                    onClick={() => void hidePalette()}
+                    disabled={busy}
+                  >
+                    Hide Palette
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="detail-body">
+                  <div className="detail-head">
+                    <div>
+                      <p className="label">Fill Fields</p>
+                      <h2>{activeTemplate.name}</h2>
+                    </div>
+                    <span className="badge">
+                      {placeholderIndex + 1} / {activeTemplate.placeholders.length}
+                    </span>
+                  </div>
+
+                  <div className="bar">
+                    <div
+                      className="bar-fill"
+                      style={{
+                        width: `${
+                          ((placeholderIndex + 1) / activeTemplate.placeholders.length) *
+                          100
+                        }%`,
+                      }}
+                    />
+                  </div>
+
+                  <div className="chips">
+                    {activeTemplate.placeholders.map((placeholder, index) => (
+                      <span
+                        key={placeholder}
+                        className={[
+                          "chip",
+                          index === placeholderIndex ? "chip-current" : "",
+                          index < placeholderIndex ? "chip-done" : "",
+                        ]
+                          .filter(Boolean)
+                          .join(" ")}
+                      >
+                        {placeholder}
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className="field-head">
+                    <label className="field" htmlFor="field-value">
+                      {currentPlaceholder}
+                    </label>
+                    <span className="field-meta">
+                      {currentValue.length} chars, <kbd>Enter</kbd> next, <kbd>Shift</kbd> +{" "}
+                      <kbd>Enter</kbd> newline
+                    </span>
+                  </div>
+
+                  <textarea
+                    ref={valueRef}
+                    id="field-value"
+                    className="textarea"
+                    autoFocus={filling}
+                    value={currentValue}
+                    onChange={(event) => {
+                      if (!currentPlaceholder) return;
+
+                      const nextValue = event.currentTarget.value;
+                      setValues((current) => ({
+                        ...current,
+                        [currentPlaceholder]: nextValue,
+                      }));
+                    }}
+                    onKeyDown={onFillKeyDown}
+                    placeholder="String content to inject into the JSON template"
+                    disabled={busy}
+                    spellCheck={false}
+                  />
+
+                  <div className="preview-shell">
+                    <div className="preview-head">
+                      <span className="label">Live Render</span>
+                      <span
+                        className={[
+                          "validation-pill",
+                          previewState.validationError ? "invalid" : "valid",
+                        ]
+                          .filter(Boolean)
+                          .join(" ")}
+                      >
+                        {previewState.validationError ? "Needs Fix" : "JSON Valid"}
+                      </span>
+                    </div>
+                    <pre className="preview">{previewState.rendered}</pre>
+                    {previewState.validationError ? (
+                      <p className="inline-note inline-note-error">
+                        {previewState.validationError}
+                      </p>
+                    ) : (
+                      <p className="inline-note">
+                        This is the exact JSON that will be copied or pasted.
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="actions">
+                  {placeholderIndex > 0 ? (
+                    <button
+                      type="button"
+                      className="secondary"
+                      onClick={() =>
+                        setPlaceholderIndex((current) => Math.max(current - 1, 0))
+                      }
+                      disabled={busy}
+                    >
+                      Back
+                    </button>
+                  ) : null}
+                  <button
+                    type="button"
+                    className="secondary"
+                    onClick={() => void copyRenderedOutput(activeTemplate, values)}
+                    disabled={busy || Boolean(previewState.validationError)}
+                  >
+                    Copy JSON
+                  </button>
+                  <button
+                    type="button"
+                    className="ghost"
+                    onClick={cancelFill}
+                    disabled={busy}
+                  >
+                    Back To Palette
+                  </button>
+                  <button
+                    type="button"
+                    className="primary"
+                    onClick={() => void advanceFill()}
+                    disabled={busy}
+                  >
+                    {busy
+                      ? "Working..."
+                      : finalStep
+                        ? TAURI_RUNTIME_AVAILABLE
+                          ? "Insert Prompt"
+                          : "Copy JSON"
+                        : "Next Field"}
+                  </button>
+                </div>
+              </>
+            )}
+          </section>
+        </div>
       </section>
     </main>
   );
