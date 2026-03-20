@@ -1,0 +1,398 @@
+{
+  "repository_summary": {
+    "name": "prompt_palette_Tauri",
+    "description": "A Tauri 2 desktop application that provides a keyboard-driven command palette for managing, filling, and injecting structured JSON prompt templates into target applications. Implements a React 19 frontend with TypeScript strict mode, a Rust backend using Win32 APIs for global hotkey registration, clipboard I/O, and keyboard input simulation. Designed as a local-first tool for structured LLM prompt management with a progressive field-filling workflow.",
+    "stack": ["Tauri 2", "Rust (edition 2021)", "React 19", "TypeScript 5.8", "Vite 7", "Win32 API"],
+    "scope": "Single-purpose desktop utility with Windows-first platform features (hotkey, paste injection) and cross-platform fallback (clipboard copy, tray, UI).",
+    "maturity": "Early-stage production-ready application with 16 built-in templates, icon assets, tray integration, and release bundle configuration. No CI/CD, no automated tests."
+  },
+
+  "atomic_skills": [
+    {
+      "id": "tauri-command-ipc",
+      "skill": "Defining typed Tauri IPC commands with Result-based error propagation to the frontend",
+      "evidence": "src-tauri/src/lib.rs: #[tauri::command] functions (hide_palette, paste_rendered_prompt, copy_rendered_prompt) return Result<(), String> and use map_err() to convert Tauri errors to frontend-friendly strings.",
+      "evidence_strength": "strong",
+      "transferable": true
+    },
+    {
+      "id": "tauri-event-system",
+      "skill": "Implementing bidirectional event communication between Tauri backend and React frontend using emit/listen patterns",
+      "evidence": "lib.rs emits 'palette://show' and 'palette://hotkey-error' events; App.tsx subscribes via listen() with cleanup-on-unmount pattern using a disposed flag and unlisten callbacks.",
+      "evidence_strength": "strong",
+      "transferable": true
+    },
+    {
+      "id": "tauri-tray-integration",
+      "skill": "Building system tray menus with click and menu-event routing in Tauri 2",
+      "evidence": "lib.rs build_tray() constructs menu items (Show/Quit), attaches left-click and menu-event handlers via TrayIconBuilder with pattern matching on event.id() and TrayIconEvent::Click.",
+      "evidence_strength": "strong",
+      "transferable": true
+    },
+    {
+      "id": "tauri-window-lifecycle",
+      "skill": "Managing Tauri window lifecycle to hide-on-close instead of exit, with unminimize/show/focus sequencing",
+      "evidence": "lib.rs: on_window_event handler intercepts CloseRequested with event.prevent_close(), calls window.hide(). show_main_window() chains unminimize(), show(), set_focus(), and emit().",
+      "evidence_strength": "strong",
+      "transferable": true
+    },
+    {
+      "id": "tauri-managed-state",
+      "skill": "Sharing thread-safe application state across Tauri commands using Arc<Mutex<T>> with .manage()",
+      "evidence": "lib.rs: AppState with Arc<Mutex<Option<isize>>> registered via app.manage(), injected into commands via State<AppState>.",
+      "evidence_strength": "strong",
+      "transferable": true
+    },
+    {
+      "id": "win32-global-hotkey",
+      "skill": "Registering and handling global hotkeys via Win32 RegisterHotKey with a dedicated message-pump thread",
+      "evidence": "windows_palette.rs: spawn_hotkey_listener spawns a thread that calls RegisterHotKey(MOD_CONTROL | MOD_ALT, VK_SPACE), runs a GetMessageW loop filtering WM_HOTKEY messages, and calls UnregisterHotKey on exit.",
+      "evidence_strength": "strong",
+      "transferable": true
+    },
+    {
+      "id": "win32-clipboard-read-write",
+      "skill": "Performing Win32 clipboard read and write operations with UTF-16 encoding, GlobalAlloc/GlobalLock memory management, and null-terminator handling",
+      "evidence": "windows_palette.rs: read_clipboard_text() uses GetClipboardData, GlobalLock, from_raw_parts, from_utf16_lossy with null-terminator search. write_clipboard_text() encodes to UTF-16 with chain(once(0)), uses GlobalAlloc(GMEM_MOVEABLE), copy_nonoverlapping, SetClipboardData.",
+      "evidence_strength": "strong",
+      "transferable": true
+    },
+    {
+      "id": "win32-clipboard-raii-guard",
+      "skill": "Implementing a zero-sized RAII guard type for Win32 clipboard access with retry-loop acquisition and Drop-based cleanup",
+      "evidence": "windows_palette.rs: ClipboardGuard struct with acquire() retrying OpenClipboard 20 times at 25ms intervals, and Drop impl calling CloseClipboard. Used via let _clipboard = ClipboardGuard::acquire()? binding pattern.",
+      "evidence_strength": "strong",
+      "transferable": true
+    },
+    {
+      "id": "win32-clipboard-restore",
+      "skill": "Saving and restoring clipboard contents around a paste operation to avoid clobbering user data",
+      "evidence": "windows_palette.rs: paste_to_captured_window() calls read_clipboard_text() before write, then restores original text after send_ctrl_v() completes.",
+      "evidence_strength": "strong",
+      "transferable": true
+    },
+    {
+      "id": "win32-keyboard-input-simulation",
+      "skill": "Simulating keyboard input sequences (Ctrl+V) via Win32 SendInput with INPUT_KEYBOARD structs and KEYEVENTF_KEYUP flags",
+      "evidence": "windows_palette.rs: send_ctrl_v() constructs array of 4 INPUT events (Ctrl↓, V↓, V↑, Ctrl↑), calls SendInput, validates return count matches expected events.",
+      "evidence_strength": "strong",
+      "transferable": true
+    },
+    {
+      "id": "win32-thread-input-attachment",
+      "skill": "Attaching thread input queues via AttachThreadInput to enable cross-process focus transfer on Windows",
+      "evidence": "windows_palette.rs: reactivate_target_window() gets thread IDs via GetWindowThreadProcessId, attaches current thread to foreground and target threads, calls SetForegroundWindow, then detaches. Deduplicates thread IDs to avoid double-attach.",
+      "evidence_strength": "strong",
+      "transferable": true
+    },
+    {
+      "id": "win32-window-handle-management",
+      "skill": "Capturing, storing, validating, and reusing Win32 window handles (HWND) across threads with safe isize casting",
+      "evidence": "windows_palette.rs: capture_invoking_window stores GetForegroundWindow as isize in Mutex, validates with IsWindow before reuse, casts isize ↔ *mut c_void ↔ HWND. Smart fallback reuses stored handle when palette itself is foreground.",
+      "evidence_strength": "strong",
+      "transferable": true
+    },
+    {
+      "id": "rust-conditional-compilation",
+      "skill": "Using #[cfg(windows)] and #[cfg(debug_assertions)] for platform-conditional and build-mode-conditional compilation in Rust",
+      "evidence": "lib.rs: #[cfg(windows)] gates around paste logic and hotkey listener spawn; #[cfg(debug_assertions)] for show-on-startup in dev mode. #[allow(unreachable_code)] on non-Windows fallback error.",
+      "evidence_strength": "strong",
+      "transferable": true
+    },
+    {
+      "id": "rust-unsafe-with-guards",
+      "skill": "Writing unsafe Rust code with null-pointer checks, RAII guards, and validation of return values after Win32 FFI calls",
+      "evidence": "windows_palette.rs: Every unsafe block checks return values (is_null(), .is_err(), .as_bool()), uses ClipboardGuard for resource cleanup, validates SendInput return count, checks IsWindow before reuse.",
+      "evidence_strength": "strong",
+      "transferable": true
+    },
+    {
+      "id": "rust-mutex-poisoning-handling",
+      "skill": "Handling Mutex poisoning gracefully using lock().ok() chains instead of unwrap()",
+      "evidence": "windows_palette.rs: state.invoking_window.lock().ok().and_then(|stored| ...) pattern used in capture_invoking_window and captured_target, allowing graceful degradation if a thread panicked while holding the lock.",
+      "evidence_strength": "strong",
+      "transferable": true
+    },
+    {
+      "id": "rust-error-propagation-to-ui",
+      "skill": "Propagating Rust errors to the Tauri frontend UI thread using run_on_main_thread with event emission",
+      "evidence": "windows_palette.rs: spawn_hotkey_listener catches errors from run_hotkey_loop and calls app.run_on_main_thread to emit HOTKEY_ERROR_EVENT to the frontend for user-visible error display.",
+      "evidence_strength": "strong",
+      "transferable": true
+    },
+    {
+      "id": "react-error-boundary",
+      "skill": "Implementing a React error boundary class component with getDerivedStateFromError and componentDidCatch for crash recovery UI",
+      "evidence": "App.tsx: PaletteErrorBoundary class with static getDerivedStateFromError(), componentDidCatch() for logging, and a reset button in the fallback UI. Includes defensive messageFrom() helper handling Error, string, and duck-typed objects.",
+      "evidence_strength": "strong",
+      "transferable": true
+    },
+    {
+      "id": "react-deferred-value-debounce",
+      "skill": "Using React useDeferredValue to debounce search filtering for non-blocking UI rendering",
+      "evidence": "App.tsx: const deferredQuery = useDeferredValue(query); used in PROMPT_TEMPLATES.filter() to prevent lag during rapid typing.",
+      "evidence_strength": "strong",
+      "transferable": true
+    },
+    {
+      "id": "react-keyboard-navigation",
+      "skill": "Building keyboard-driven navigation with arrow keys, Enter, Escape, and Shift+Enter in a React component with IME composition awareness",
+      "evidence": "App.tsx: onSearchKeyDown handles ArrowUp/Down with Math.min/max clamping, Enter for selection, Escape for mode transitions. onFillKeyDown checks event.nativeEvent.isComposing to avoid interfering with IME input on non-Latin keyboards.",
+      "evidence_strength": "strong",
+      "transferable": true
+    },
+    {
+      "id": "react-focus-management",
+      "skill": "Managing input focus programmatically using useRef, requestAnimationFrame, and setSelectionRange for deterministic cursor positioning",
+      "evidence": "App.tsx: searchRef and valueRef managed via useRef; requestAnimationFrame ensures DOM is ready before focus(); textarea.setSelectionRange(len, len) positions cursor at end of pre-filled text.",
+      "evidence_strength": "strong",
+      "transferable": true
+    },
+    {
+      "id": "react-tauri-event-cleanup",
+      "skill": "Binding and cleaning up Tauri event listeners in React useEffect with a disposed flag to handle async race conditions on unmount",
+      "evidence": "App.tsx: useEffect creates a disposed boolean, awaits listen() promises for 'palette://show' and 'palette://hotkey-error', and runs unlisten callbacks in the cleanup function even if the component unmounts during async binding.",
+      "evidence_strength": "strong",
+      "transferable": true
+    },
+    {
+      "id": "react-conditional-rendering-modes",
+      "skill": "Implementing multi-phase UI with conditional rendering driven by state booleans (search mode vs. fill mode)",
+      "evidence": "App.tsx: const filling = activeTemplate !== null; used to toggle between search results panel (template list) and fill form (field-by-field input). Button labels dynamically change based on mode and platform.",
+      "evidence_strength": "strong",
+      "transferable": true
+    },
+    {
+      "id": "vite-glob-template-loading",
+      "skill": "Using Vite import.meta.glob with eager loading and ?raw query to compile static assets into the bundle at build time",
+      "evidence": "promptCatalog.ts: import.meta.glob('./prompts/*.json', { eager: true, import: 'default', query: '?raw' }) loads all JSON templates as raw strings synchronously at module initialization.",
+      "evidence_strength": "strong",
+      "transferable": true
+    },
+    {
+      "id": "template-placeholder-extraction",
+      "skill": "Extracting unique template placeholders using regex matchAll with Set-based deduplication",
+      "evidence": "promptCatalog.ts: extractPlaceholders() uses /\\{\\{([A-Za-z0-9_-]+)\\}\\}/g with matchAll iterator and Set to collect unique placeholder keys from template content.",
+      "evidence_strength": "strong",
+      "transferable": true
+    },
+    {
+      "id": "template-rendering-with-json-escaping",
+      "skill": "Rendering template placeholders with JSON-safe value escaping using JSON.stringify slice and line-ending normalization",
+      "evidence": "promptCatalog.ts: escapeJsonStringContent() normalizes \\r\\n to \\n, applies JSON.stringify() for full escaping, then .slice(1,-1) to strip quotes. renderPromptTemplate() uses hasOwnProperty check and preserves unmatched placeholders.",
+      "evidence_strength": "strong",
+      "transferable": true
+    },
+    {
+      "id": "json-validation-defense-in-depth",
+      "skill": "Implementing dual-layer JSON validation on both client (TypeScript JSON.parse) and server (Rust serde_json) before clipboard or paste operations",
+      "evidence": "App.tsx: buildRenderState() calls JSON.parse(rendered) in try-catch. lib.rs: paste_rendered_prompt and copy_rendered_prompt call serde_json::from_str::<Value>() before proceeding.",
+      "evidence_strength": "strong",
+      "transferable": true
+    },
+    {
+      "id": "structured-prompt-schema-design",
+      "skill": "Designing hierarchical JSON schemas for LLM prompt templates with semantic sections (objective, context, instructions, constraints, success_criteria, output_format)",
+      "evidence": "src/prompts/*.json: 16 template files using consistent schema with nested sections for objective, task_type, context (with sub-fields), instructions (optimize_for, do_not), constraints, success_criteria, and output_format.",
+      "evidence_strength": "strong",
+      "transferable": true
+    },
+    {
+      "id": "role-based-prompt-differentiation",
+      "skill": "Creating domain-specialized prompt templates differentiated by advisor role while sharing a common structural schema",
+      "evidence": "src/prompts/team_advisor_*.json: 8 role-based advisor templates (data/schema, architecture, backend, tooling, frontend, QA, security, integration) share the same JSON structure but differ in objective, domain-specific instructions, and evaluation criteria.",
+      "evidence_strength": "strong",
+      "transferable": true
+    },
+    {
+      "id": "css-custom-property-design-system",
+      "skill": "Building a CSS design system using semantic custom properties for colors, with composition (variables referencing variables) and three-part message states",
+      "evidence": "App.css: :root defines --page, --surface, --surface-muted, --border, --text, --muted, --accent, --accent-text, and --success-*/ --danger-* triplets (bg, border, text). --border references --surface-muted; --accent references --text.",
+      "evidence_strength": "strong",
+      "transferable": true
+    },
+    {
+      "id": "css-grid-scrollable-layout",
+      "skill": "Using CSS Grid with minmax(0, 1fr) for scroll-safe flexible layouts that prevent content overflow",
+      "evidence": "App.css: .frame uses grid-template-rows: auto auto minmax(0, 1fr) allowing the content area to scroll without breaking the fixed header layout.",
+      "evidence_strength": "moderate",
+      "transferable": true
+    },
+    {
+      "id": "platform-feature-detection",
+      "skill": "Detecting Tauri runtime availability at the TypeScript level to conditionally enable platform-specific UI features",
+      "evidence": "App.tsx: const IS_TAURI = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window; used to toggle between 'Insert Prompt' (paste) and 'Copy JSON' (clipboard-only) buttons.",
+      "evidence_strength": "strong",
+      "transferable": true
+    },
+    {
+      "id": "progressive-field-filling-workflow",
+      "skill": "Implementing a linear field-by-field form filling workflow with progress tracking, chip indicators, and Enter-to-advance navigation",
+      "evidence": "App.tsx: placeholderIndex state tracks current field position; advanceFill() increments index or triggers submission on final field. UI shows progress bar (N/M) and chip indicators for filled vs. pending fields.",
+      "evidence_strength": "strong",
+      "transferable": true
+    },
+    {
+      "id": "tauri-capability-permissions",
+      "skill": "Configuring Tauri 2 capability-based permissions to restrict IPC access scope",
+      "evidence": "src-tauri/capabilities/default.json: Defines permissions array ['core:default', 'opener:default'] scoped to windows: ['main'], following Tauri 2 security model.",
+      "evidence_strength": "moderate",
+      "transferable": true
+    },
+    {
+      "id": "cross-platform-bundle-config",
+      "skill": "Configuring Tauri bundle settings for multi-platform distribution with icon assets at multiple resolutions",
+      "evidence": "tauri.conf.json: targets 'all', icon paths for .png (32x32, 128x128, 128x128@2x), .ico (Windows), .icns (macOS). Window dimensions and tray icon specified.",
+      "evidence_strength": "moderate",
+      "transferable": true
+    },
+    {
+      "id": "typescript-strict-mode",
+      "skill": "Developing TypeScript applications under strict mode with bundler module resolution",
+      "evidence": "tsconfig.json: strict: true, noUnusedLocals: true, noUnusedParameters: true, noFallthroughCasesInSwitch: true. moduleResolution: 'bundler'.",
+      "evidence_strength": "strong",
+      "transferable": true
+    },
+    {
+      "id": "hotkey-release-detection",
+      "skill": "Detecting physical key release state via Win32 GetAsyncKeyState before proceeding with hotkey-triggered actions",
+      "evidence": "windows_palette.rs: wait_for_hotkey_release() polls GetAsyncKeyState for VK_CONTROL, VK_MENU, VK_SPACE in a loop with 10ms sleep until all keys are released, preventing ghost keystrokes in the target window.",
+      "evidence_strength": "strong",
+      "transferable": true
+    },
+    {
+      "id": "prototype-pollution-guard",
+      "skill": "Using Object.prototype.hasOwnProperty.call() to guard against prototype pollution in template rendering",
+      "evidence": "promptCatalog.ts: renderPromptTemplate() checks Object.prototype.hasOwnProperty.call(values, key) before substituting placeholder values, preventing prototype chain leakage.",
+      "evidence_strength": "strong",
+      "transferable": true
+    }
+  ],
+
+  "skill_clusters": [
+    {
+      "cluster": "Tauri Desktop Application Development",
+      "skills": ["tauri-command-ipc", "tauri-event-system", "tauri-tray-integration", "tauri-window-lifecycle", "tauri-managed-state", "tauri-capability-permissions", "cross-platform-bundle-config"]
+    },
+    {
+      "cluster": "Win32 System Integration (Rust FFI)",
+      "skills": ["win32-global-hotkey", "win32-clipboard-read-write", "win32-clipboard-raii-guard", "win32-clipboard-restore", "win32-keyboard-input-simulation", "win32-thread-input-attachment", "win32-window-handle-management", "hotkey-release-detection"]
+    },
+    {
+      "cluster": "Rust Systems Programming Patterns",
+      "skills": ["rust-conditional-compilation", "rust-unsafe-with-guards", "rust-mutex-poisoning-handling", "rust-error-propagation-to-ui", "win32-clipboard-raii-guard"]
+    },
+    {
+      "cluster": "React Frontend Engineering",
+      "skills": ["react-error-boundary", "react-deferred-value-debounce", "react-keyboard-navigation", "react-focus-management", "react-tauri-event-cleanup", "react-conditional-rendering-modes"]
+    },
+    {
+      "cluster": "Template and Schema Design",
+      "skills": ["template-placeholder-extraction", "template-rendering-with-json-escaping", "structured-prompt-schema-design", "role-based-prompt-differentiation", "vite-glob-template-loading"]
+    },
+    {
+      "cluster": "Input Validation and Safety",
+      "skills": ["json-validation-defense-in-depth", "prototype-pollution-guard", "rust-unsafe-with-guards", "win32-clipboard-restore"]
+    },
+    {
+      "cluster": "UI/UX Design Implementation",
+      "skills": ["css-custom-property-design-system", "css-grid-scrollable-layout", "progressive-field-filling-workflow", "platform-feature-detection", "react-keyboard-navigation"]
+    }
+  ],
+
+  "evidence_basis": {
+    "primary_sources": [
+      "prompt_palette/src/App.tsx — Main React component (~730 lines): state management, keyboard navigation, event binding, error boundary, multi-mode UI",
+      "prompt_palette/src/promptCatalog.ts — Template loading and rendering (~56 lines): Vite glob import, placeholder regex, JSON-safe escaping, prototype pollution guard",
+      "prompt_palette/src-tauri/src/lib.rs — Tauri backend setup (~156 lines): IPC commands, tray menu, window lifecycle, managed state, platform-conditional compilation",
+      "prompt_palette/src-tauri/src/windows_palette.rs — Win32 integration (~353 lines): hotkey thread, clipboard RAII, window reactivation, keyboard simulation, thread attachment",
+      "prompt_palette/src/prompts/*.json — 16 structured JSON prompt templates with consistent schema and placeholder syntax",
+      "prompt_palette/src/App.css — CSS design system (~247 lines): custom properties, grid layout, typography, button tiers",
+      "prompt_palette/src-tauri/tauri.conf.json — App window, security, and bundle configuration",
+      "prompt_palette/src-tauri/capabilities/default.json — Tauri 2 capability-based permission scope",
+      "prompt_palette/tsconfig.json — TypeScript strict mode configuration",
+      "prompt_palette/vite.config.ts — Vite build configuration with Tauri integration"
+    ],
+    "methodology": "Each skill was extracted by reading source code line-by-line, identifying specific implementation patterns, API usage, and design decisions. Skills were decomposed to the smallest meaningful unit where a distinct technique or capability is demonstrated. Evidence strength was rated based on code completeness and specificity."
+  },
+
+  "ambiguities_or_borderline_calls": [
+    {
+      "item": "Cross-platform support scope",
+      "note": "The app bundles for all platforms and the UI works cross-platform, but hotkey registration, paste injection, and clipboard operations are Windows-only. The cross-platform claim is structurally present (cfg gates, fallback errors) but functionally limited. Skills were scoped to what is actually implemented rather than aspirational."
+    },
+    {
+      "item": "Test coverage",
+      "note": "No automated tests exist in the repository. No test files, no test configuration, no CI/CD workflows. Testing skill cannot be claimed. The dual JSON validation pattern is the closest analog to a correctness check."
+    },
+    {
+      "item": "CSS design system depth",
+      "note": "The CSS uses custom properties and semantic naming, but it is a single-file implementation (~247 lines) for a fixed-size window. The 'design system' claim is modest — it demonstrates the technique but not at the scale of a shared component library. Rated moderate."
+    },
+    {
+      "item": "Template schema standardization",
+      "note": "The 16 JSON templates follow a consistent structure, but there is no formal schema definition (no JSON Schema, no TypeScript interface enforcing template content structure). The consistency is maintained by convention rather than by contract enforcement."
+    },
+    {
+      "item": "Security posture",
+      "note": "CSP is set to null in tauri.conf.json, which is acceptable for a local-only Tauri app but would not be appropriate for a web-facing application. The prototype pollution guard in promptCatalog.ts is a genuine safety measure. Clipboard guard retry logic handles contention. These are real security-aware patterns but not a comprehensive security implementation."
+    },
+    {
+      "item": "Vite/build tooling skill",
+      "note": "Vite configuration is minimal (plugin-react, Tauri dev server port, HMR). The import.meta.glob usage is a genuine Vite-specific skill, but general build tooling configuration is thin. Skill was scoped to the glob usage rather than 'Vite expertise'."
+    }
+  ],
+
+  "transferable_signal_notes": [
+    {
+      "signal": "Win32 FFI integration in Rust demonstrates ability to work with low-level system APIs, unsafe code discipline, and cross-language interop — transferable to any systems programming role requiring OS-level integration.",
+      "skills": ["win32-global-hotkey", "win32-clipboard-read-write", "win32-keyboard-input-simulation", "win32-thread-input-attachment", "rust-unsafe-with-guards"]
+    },
+    {
+      "signal": "RAII pattern implementation (ClipboardGuard) and Arc<Mutex<T>> state management demonstrate Rust ownership and concurrency fluency — transferable to any Rust systems or backend role.",
+      "skills": ["win32-clipboard-raii-guard", "tauri-managed-state", "rust-mutex-poisoning-handling"]
+    },
+    {
+      "signal": "Keyboard-driven UI with IME awareness, error boundary, deferred rendering, and focus management demonstrates production-quality React development — transferable to any frontend engineering role.",
+      "skills": ["react-keyboard-navigation", "react-error-boundary", "react-deferred-value-debounce", "react-focus-management"]
+    },
+    {
+      "signal": "Template system with placeholder extraction, JSON-safe escaping, and prototype pollution guard demonstrates attention to injection safety and structured data handling — transferable to any role involving template engines, code generation, or data pipelines.",
+      "skills": ["template-rendering-with-json-escaping", "prototype-pollution-guard", "json-validation-defense-in-depth"]
+    },
+    {
+      "signal": "Structured JSON prompt schema design with role differentiation demonstrates schema-first thinking and domain modeling — transferable to API design, configuration management, and knowledge system roles.",
+      "skills": ["structured-prompt-schema-design", "role-based-prompt-differentiation"]
+    }
+  ],
+
+  "overclaim_risks": [
+    {
+      "risk": "Claiming 'cross-platform desktop development' when Windows is the only platform with full feature implementation",
+      "mitigation": "Skills were scoped to specific platform capabilities (Win32 hotkey, clipboard) rather than broad cross-platform claims"
+    },
+    {
+      "risk": "Claiming 'testing' or 'quality assurance' when no tests exist",
+      "mitigation": "No testing skills were included. Dual validation was noted as a correctness pattern but not as testing"
+    },
+    {
+      "risk": "Claiming 'CI/CD' or 'DevOps' when no workflows exist",
+      "mitigation": "No CI/CD skills were included despite bundle configuration being present"
+    },
+    {
+      "risk": "Inflating 'design system' from a single CSS file",
+      "mitigation": "CSS skill was scoped to 'custom property design system' with moderate evidence strength rather than 'design system architecture'"
+    }
+  ],
+
+  "dedupe_notes_for_cross_repo_merge": [
+    "Tauri-specific skills (command IPC, event system, tray, window lifecycle, capabilities) should be tagged as Tauri 2-scoped and may overlap with other Tauri projects.",
+    "React patterns (error boundary, deferred value, keyboard navigation, focus management) are general React skills and will likely appear across multiple frontend repositories — deduplicate at the pattern level, keep strongest evidence.",
+    "Win32 API skills are highly specific and unlikely to recur in other repos unless the user has additional Windows-native projects.",
+    "Template/schema design skills may overlap with other prompt-engineering or configuration-management repositories — compare schema structures to determine if the skill is a recurrence or a distinct variant.",
+    "TypeScript strict mode and Vite glob usage are common foundational skills likely present in many repos — keep one canonical instance with strongest evidence.",
+    "JSON validation defense-in-depth may recur wherever the user implements client-server validation — track as a recurring pattern rather than repo-specific skill."
+  ],
+
+  "main_takeaway": "This repository demonstrates strong integration-layer engineering: bridging a React UI to a Rust backend to Win32 system APIs, with attention to resource safety (RAII clipboard guard), input correctness (JSON validation, prototype pollution guard, IME awareness), and user workflow design (progressive field filling, clipboard restore, hotkey release detection). The strongest signals are in Win32 FFI discipline, Tauri IPC architecture, and keyboard-driven UI implementation. The weakest areas are the absence of automated tests and CI/CD, and the Windows-only scope of the most technically interesting features."
+}
