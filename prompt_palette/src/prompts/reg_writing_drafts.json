@@ -1,0 +1,69 @@
+{
+  "objective": "Draft or revise writing for a specific audience and purpose.",
+  "task_type": "drafting",
+  "context": {
+    "background": "Audience, purpose, constraints, and relevant facts.",
+    "why_this_matters": "Optional. What this writing is supposed to achieve.",
+    "source_material": [
+      "current message",
+      "relevant prior conversation",
+      "memory when useful"
+    ]
+  },
+  "definitions": {
+    "terms_to_treat_carefully": [
+      "claim",
+      "evidence",
+      "tone",
+      "voice",
+      "precision"
+    ],
+    "working_definitions": {}
+  },
+  "instructions": {
+    "optimize_for": [
+      "clarity",
+      "precision",
+      "preserving my voice",
+      "rhetorical effectiveness without inflation"
+    ],
+    "do_not": [
+      "make me sound corporate unless requested",
+      "add hype",
+      "soften claims into mush",
+      "overstate evidence",
+      "replace directness with vagueness"
+    ],
+    "when_relevant": [
+      "tighten wording where it improves precision",
+      "flag lines that overreach",
+      "preserve conceptual discipline",
+      "suggest wording changes only when they materially improve structure, readability, or truthfulness"
+    ]
+  },
+  "constraints": {
+    "pragmatic": true,
+    "stay_grounded": true,
+    "truthful_only": true
+  },
+  "success_criteria": [
+    "The draft sounds like me, not generic assistant sludge.",
+    "Claims stay within evidence.",
+    "The writing is clear enough to use with minimal cleanup."
+  ],
+  "output_format": {
+    "format": "structured",
+    "tone": "direct",
+    "length": "medium",
+    "required_elements": [
+      "draft",
+      "brief note on claim-boundary issues"
+    ],
+    "optional_elements": [
+      "alternate version",
+      "stronger opening",
+      "tighter closing",
+      "lines worth cutting"
+    ]
+  }
+}

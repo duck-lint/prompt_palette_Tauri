@@ -1,0 +1,38 @@
+{
+  "objective": "advise on which specific parts of the proposal require consultation with specific team members and which can be left out",
+  "context": {
+    "background": "current proposal conversation",
+    "workflow_strategy_for_understanding_direction": "the SMEs will be consulted based on your guidance, and asked to provide advice to implementation engineers if material. Then an implementation manager will be consulted with the SME guidance and will either stage a single workflow, or parallel workflows, understanding they will be required to execute a final workflow that is a combination of the staged and parallel workflows, and will be responsible for ensuring the final workflow is executed correctly.",
+    "source_material": [
+      "current message",
+      "relevant prior conversation",
+      "memory when useful"
+    ],
+    "team_members": [
+      "Data / Schema Expert, Senior",
+      "Contract Architect, Senior",
+      "Backend Engineer, Senior",
+      "Platform / Tooling Expert, Senior",
+      "Frontend Engineer, Senior",
+      "Quality Assurance Engineer, Senior",
+      "Security Expert, Senior"
+    ]
+  },
+  "instructions": {
+    "optimize_for": [
+      "precision",
+      "pragmatism",
+      "bounded responsibility"
+    ],
+    "do_not": "needlessly suggest involving more people than necessary",
+    "when_relevant": [
+      "flag ambiguous terms",
+      "separate assumptions, evidence, and conclusions"
+    ]
+  },
+  "output_format": {
+    "format": "comparative list of team members to consult vs. not consult",
+    "tone": "direct, serious, engaged"
+  },
+  "message": "considering the consultation needs for the current proposal conversation, which team members should be consulted and which can be left out? provide a comparative list of team members to consult vs. not consult, along with brief justifications for each recommendation."
+}

@@ -1,0 +1,82 @@
+{
+  "objective": "Analyze a philosophical claim, distinction, or argument.",
+  "task_type": "analysis",
+  "context": {
+    "background": "Relevant context only.",
+    "why_this_matters": "Optional. What this is for: note, essay, system-building, dialogue, etc.",
+    "source_material": [
+      "current message",
+      "relevant prior conversation",
+      "memory when useful"
+    ],
+    "frameworks_to_use": [
+      "semantic geometry",
+      "dynamic coherence",
+      "public vs indexical register distinction"
+    ]
+  },
+  "definitions": {
+    "terms_to_treat_carefully": [
+      "epistemology",
+      "ontology",
+      "meta-ontology",
+      "metaphysics",
+      "cause",
+      "representation",
+      "appearance",
+      "noumenal",
+      "correlation",
+      "necessity"
+    ],
+    "working_definitions": {}
+  },
+  "instructions": {
+    "optimize_for": [
+      "conceptual precision",
+      "clean distinctions",
+      "pressure-testing assumptions",
+      "compatibility with my broader framework where relevant"
+    ],
+    "do_not": [
+      "agree just to agree",
+      "reify abstractions too quickly",
+      "smuggle in metaphysical assumptions",
+      "use vague spiritual language unless explicitly requested",
+      "treat model outputs as reality claims"
+    ],
+    "when_relevant": [
+      "distinguish epistemology from ontology from meta-ontology",
+      "separate model from reality",
+      "identify hidden assumptions",
+      "show where a claim changes register",
+      "note what would count against the claim",
+      "point out structural similarity to ideas I have already developed"
+    ]
+  },
+  "constraints": {
+    "pragmatic": true,
+    "stay_grounded": true,
+    "truthful_only": true
+  },
+  "success_criteria": [
+    "The analysis sharpens the claim rather than decorating it.",
+    "Ambiguous terms are cleaned up.",
+    "Inferential steps are visible and testable."
+  ],
+  "output_format": {
+    "format": "conversational",
+    "tone": "direct, serious, engaged",
+    "length": "medium",
+    "required_elements": [
+      "best reading of the question",
+      "main analysis",
+      "where the claim is strong or weak"
+    ],
+    "optional_elements": [
+      "reframed definition",
+      "argument skeleton",
+      "failure mode",
+      "bridge to my existing framework"
+    ]
+  }
+}

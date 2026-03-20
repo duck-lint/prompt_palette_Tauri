@@ -1,0 +1,93 @@
+{
+  "objective": "{{objective}}",
+  "task_type": "coding",
+  "context": {
+    "attachment": "{{attachment_t_f}}",
+    "background": "{{background}}",
+    "why_this_matters": "{{why_this_matters}}",
+    "source_material": [
+      "current message",
+      "relevant prior conversation",
+      "memory when useful"
+    ],
+    "frameworks_to_use": [
+      "traceability",
+      "dynamic coherence",
+      "epistemic hygiene",
+      "robustness",
+      "anti drift"
+    ]
+  },
+  "definitions": {
+    "terms_to_treat_carefully": [
+      "schema",
+      "memory",
+      "retrieval",
+      "evidence",
+      "confidence",
+      "agent",
+      "cause"
+    ],
+    "working_definitions": {}
+  },
+  "instructions": {
+    "optimize_for": [
+      "clarity",
+      "safety",
+      "explicit naming",
+      "maintainability",
+      "traceability",
+      "small, testable changes",
+      "robustness to edge cases and distribution shift"
+    ],
+    "do_not": [
+      "invent unsupported behavior",
+      "hide tradeoffs",
+      "write brittle magic",
+      "blur data model and inference layer",
+      "silently change semantics"
+    ],
+    "when_relevant": [
+      "explain why, not just what",
+      "use descriptive names",
+      "prefer dry_run or safety flags",
+      "suggest explicit conflict strategies",
+      "connect schema choices to retrieval quality, coherence, and interpretation",
+      "flag places where validation or invariants should exist",
+      "separate immediate fix from longer-term architecture cleanup"
+    ]
+  },
+  "constraints": {
+    "pragmatic": true,
+    "stay_grounded": true,
+    "truthful_only": true
+  },
+  "success_criteria": [
+    "The recommendation is implementable without hidden assumptions.",
+    "Tradeoffs are explicit.",
+    "The result improves reliability, clarity, or retrieval quality in a measurable way."
+  ],
+  "output_format": {
+    "format": "structured",
+    "tone": "direct",
+    "length": "medium",
+    "required_elements": [
+      "recommended approach",
+      "tradeoffs",
+      "example or code sample"
+    ],
+    "optional_elements": [
+      "patch plan",
+      "tests to add",
+      "edge cases",
+      "migration notes"
+    ],
+    "codex_JSON_prompt": {
+      "required": "{{is_a_codex_json_required}}",
+      "language": "{{type_JSON_if_required}}",
+      "UAT_list_required_for_user_after_refactor": "{{uat_list_yes_no_or_null}}",
+      "mandatory_for_codex_instructions": "encoding_UTF8_NO_BOM"
+    }
+  },
+  "message": "{{message}}"
+}

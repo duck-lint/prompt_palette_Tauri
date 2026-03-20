@@ -1,0 +1,103 @@
+{
+  "team_base_handoff_template": {
+    "handoff_type": "senior_implementation_engineer_assignment",
+    "assignment_header": {
+      "assignment_id": "{{ASSIGNMENT_ID}}",
+      "assignment_title": "{{ASSIGNMENT_TITLE}}",
+      "source_advisor_role": "{{SOURCE_ADVISOR_ROLE}}",
+      "locked_diff_direction": "{{LOCKED_DIFF_DIRECTION}}",
+      "priority": "{{PRIORITY}}",
+      "status": "draft_for_advisor_completion"
+    },
+    "scope": {
+      "implementation_goal": "{{IMPLEMENTATION_GOAL}}",
+      "in_scope": [
+        "{{IN_SCOPE_ITEM_1}}",
+        "{{IN_SCOPE_ITEM_2}}"
+      ],
+      "out_of_scope": [
+        "{{OUT_OF_SCOPE_ITEM_1}}",
+        "{{OUT_OF_SCOPE_ITEM_2}}"
+      ],
+      "non_goals": [
+        "{{NON_GOAL_1}}"
+      ]
+    },
+    "repo_targets": {
+      "owned_files_or_modules": [
+        "{{OWNED_FILE_OR_MODULE_1}}",
+        "{{OWNED_FILE_OR_MODULE_2}}"
+      ],
+      "likely_touched_files_or_modules": [
+        "{{LIKELY_TOUCHED_FILE_OR_MODULE_1}}"
+      ],
+      "do_not_touch_without_explicit_escalation": [
+        "{{DO_NOT_TOUCH_1}}",
+        "{{DO_NOT_TOUCH_2}}"
+      ],
+      "file_encoding_no_bom_utf8_or_other_encoding": "{{FILE_ENCODING}}"
+    },
+    "contract_surfaces": {
+      "must_preserve": [
+        "{{CONTRACT_SURFACE_TO_PRESERVE_1}}",
+        "{{CONTRACT_SURFACE_TO_PRESERVE_2}}"
+      ],
+      "approved_contract_changes": [
+        "{{APPROVED_CONTRACT_CHANGE_1}}"
+      ],
+      "user_visible_behavior_implications": [
+        "{{USER_VISIBLE_BEHAVIOR_NOTE_1}}"
+      ],
+      "data_or_persistence_implications": [
+        "{{DATA_IMPLICATION_NOTE_1}}"
+      ]
+    },
+    "advisor_guidance": {
+      "summary_of_reasoning": "{{ADVISOR_SUMMARY_OF_REASONING}}",
+      "required_implementation_shape": [
+        "{{REQUIRED_IMPLEMENTATION_SHAPE_1}}"
+      ],
+      "forbidden_shortcuts": [
+        "{{FORBIDDEN_SHORTCUT_1}}"
+      ],
+      "known_risks": [
+        "{{KNOWN_RISK_1}}"
+      ],
+      "open_questions_or_thin_evidence": [
+        "{{OPEN_QUESTION_1}}"
+      ]
+    },
+    "validation": {
+      "tests_to_run_or_update": [
+        "{{TEST_TO_RUN_OR_UPDATE_1}}",
+        "{{TEST_TO_RUN_OR_UPDATE_2}}"
+      ],
+      "manual_checks": [
+        "{{MANUAL_CHECK_1}}"
+      ],
+      "acceptance_criteria": [
+        "{{ACCEPTANCE_CRITERION_1}}",
+        "{{ACCEPTANCE_CRITERION_2}}"
+      ]
+    },
+    "merge_and_review_notes": {
+      "depends_on": [
+        "{{DEPENDENCY_1}}"
+      ],
+      "blocks": [
+        "{{BLOCKS_1}}"
+      ],
+      "reviewer_attention_points": [
+        "{{REVIEWER_ATTENTION_POINT_1}}"
+      ],
+      "integration_notes": [
+        "{{INTEGRATION_NOTE_1}}"
+      ]
+    },
+    "engineer_instruction_footer": {
+      "base_prompt_reference": "Use the approved Senior Implementation Engineer base prompt.",
+      "assignment_wrapper_note": "Fill this packet concretely before handoff. Do not leave placeholders in the final engineer packet unless the uncertainty is real and must be escalated.",
+      "escalation_rule": "If repo reality conflicts with this packet, the implementation engineer must choose the least destabilizing path consistent with repo evidence and explicitly document the conflict."
+    }
+  }
+}   
