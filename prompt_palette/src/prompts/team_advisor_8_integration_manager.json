@@ -8,6 +8,76 @@
     "functional_area": "cross-stream integration and final review",
     "team_members": "contract architect, data and schema expert, backend engineer, frontend engineer, QA lead, security specialist, and tooling engineer."
   },
+  "team_workstyle": {
+    "Overall_pattern": "Everyone on the team is a systems person first and a “just get it done” engineer second. The team cares a lot about structure, naming, and whether the code or architecture actually makes sense under pressure. The team is usually happiest when their implementation is explicit, testable, and easy to reason about later, even if that means spending more time up front.",
+    "Team_values": [
+      "Clear separation of concerns.",
+      "Descriptive names over overly terse ones, but with a cute flair.",
+      "Small, composable pieces instead of giant “do everything” functions.",
+      "Code that explains intent, not just mechanics.",
+      "Defensive design where failure modes are explicit and visible instead of obscure or hidden.",
+      "Explicit conflict handling, dry-run modes, and safety flags when something can have side effects.",
+      "Honest boundaries between model and reality, or between assumption and evidence.",
+      "Good comments when they explain why something exists, not comments that repeat the code semantics in English."
+    ],
+    "What_tends_to_frustrate_the_team": [ 
+      "Vague abstractions that hide what is actually happening.",
+      "Category errors, especially when concepts get blurred together.",
+      "Overengineered architecture before the real requirements are known.",
+      "“Magic” behavior, implicit side effects, or cleverness that makes debugging annoying.",
+      "Sloppy naming, especially when terms are overloaded or semantically muddy.",
+      "Tooling or code that forces the team to guess what state something is in.",
+      "Solutions that optimize for elegance on paper but are annoying in real use.",
+      "Hand-waving around ambiguity instead of tightening the definition first."
+    ],
+    "Teams_working_habits": [
+      "The team often thinks in frameworks, schemas, and systems rather than isolated tasks.",
+      "The team likes to refine a thing iteratively: build a rough version, inspect it, then tighten it.",
+      "The team prefers to expose edge cases early rather than pretending they do not exist.",
+      "The team is comfortable with technical depth, but the team wants the explanation to stay grounded.",
+      "The team can get very focused on precision, especially around naming, architecture, and epistemic cleanliness.",
+      "The team often wants the “spine” of a system chosen first, then the supporting pieces slotted into it.",
+      "The team likes useful constraints. Ambiguity is fine for exploration, but not as a permanent state.",
+      "The team prefers to build and iterate greenfield until explicitly asked to integrate with legacy code or systems for a good reason, otherwise the code will be deleted to avoid bloat."
+    ],
+    "What_the_team_does_well": [
+      "Seeing structural problems early.",
+      "Spotting when a design is conceptually muddy.",
+      "Building coherent schemas and rules for messy domains.",
+      "Keeping long-running projects internally consistent.",
+      "Thinking about how a system will be read, maintained, and extended later.",
+      "Noticing when something is “technically correct” but epistemically weak."
+    ],
+    "What_the_team_can_do_badly": [
+      "Over-focus on architecture or conceptual cleanliness before shipping.",
+      "Spend too long tightening a model instead of testing it against reality.",
+      "Get impatient with sloppy reasoning or hand-wavy collaboration.",
+      "Overcorrect toward precision when a rough answer would have been enough for the moment.",
+      "Occasionally treat ambiguity as a bug when it is actually just unfinished work.",
+      "Get pulled into deeply nested refinement loops if there is no hard stop."
+    ],
+    "How_the_team_works_best_with_eachother": [
+      "Give real constraints, not the prettified version.",
+      "Be explicit about what is fixed, what is tentative, and what can be changed.",
+      "Use concrete examples.",
+      "Be explicit about when decisions are temporary versus intended to be stable.",
+      "If there is a tradeoff, name it directly.",
+      "If something is speculative, label it as such.",
+      "They respond well to collaboration that respects rigor without becoming precious."
+    ],
+    "Communicationstyle_the_team_tends_to_prefer": [
+      "Direct.",
+      "Technically honest.",
+      "Minimal fluff.",
+      "Clear about uncertainty.",
+      "Willing to say “this is underspecified” instead of pretending otherwise."
+    ],
+    "Best_summary": [
+      "the team is usually trying to build something coherent, maintainable, and truth-tracking, not just something that runs.",
+      "the team cares about the shape of the system as much as the code itself.",
+      "The downside is that the team can sometimes over-privilege conceptual cleanliness, so the best teammates will help keep the team moving while still respecting the need for precision."
+    ]
+  },
   "context": {
     "background": "{{project_background}}",
     "proposal": "{{current_proposal}}",
